@@ -135,9 +135,9 @@ Nova uses the novamq.rpc module to talk to the server as either a client or
 service.  This is set as the 'rpc_backend' flag.  Easiest way to hack on this
 code is to simply do this:
 
-  ln ../nova-mq/novamq .
-  export PYTHONPATH=.
-  vi nova/rpc/__init__.py
+    ln ../nova-mq/novamq .
+    export PYTHONPATH=.
+    vi nova/rpc/__init__.py
 
 And then change the source in nova/rpc/__init__.py to use novamq.rpc on line
 26.  You can then just run unit tests all you want with no problems an no
