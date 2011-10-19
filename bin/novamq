@@ -1,0 +1,20 @@
+#!/usr/bin/env python
+
+from eventlet.green import zmq
+import eventlet
+from novamq import routers
+
+CTX = zmq.Context(1)
+
+fanout = routers.PubSubRouter(CTX, "tcp://127.0.0.1:6800", "tcp://127.0.0.1:6801")
+fanout.run()
+
+rrobin = routers.RoundRobinRouter(CTX, "tcp://127.0.0.1:6802", "tcp://127.0.0.1:%d", 6900)
+rrobin.run()
+
+p2p = routers.PointToPointRouter(CTX, "tcp://127.0.0.1:6804", "tcp://127.0.0.1:6805")
+p2p.run()
+
+while True:
+    eventlet.sleep(1)
+
