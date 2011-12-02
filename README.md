@@ -138,9 +138,10 @@ code is to simply do this:
     ln -s ../nova-mq/novamq .
     export PYTHONPATH=.
     vi nova/rpc/__init__.py
+    vi nova/testsfake_flags.py
 
 And then change the source in nova/rpc/\_\_init\_\_.py to use novamq.rpc on line
-26.  You can then just run unit tests all you want with no problems an no
+26.  Remove line 43 in nova/tests/fake\_flags.py which sets 'rpc\_backend' to 'impl\_fake.'  You can then just run unit tests all you want with no problems an no
 configurations needed.
 
 
