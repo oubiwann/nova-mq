@@ -1,15 +1,20 @@
-from nose.tools import *
-from novamq import services, routers, client
 import random
 import sys
-from eventlet.green import zmq
+
+from nose.tools import *
+
 import eventlet
+from eventlet.green import zmq
 from eventlet.greenpool import GreenPool
+
+from novamq import services, routers, client
+
 
 CTX = zmq.Context(1)
 
 fanout = routers.PubSubRouter(CTX, "tcp://127.0.0.1:6800", "tcp://127.0.0.1:6801")
 fanout.run()
+
 
 def fake_service(service_addr, test_context):
     pub_service = services.PubSubService(CTX, service_addr, "testpubs")
@@ -23,6 +28,7 @@ def fake_service(service_addr, test_context):
 
     test_context['services'] = count
 
+
 def fake_client(client_addr, ident, test_context):
     conn = client.PubSubClient(CTX, client_addr, ident)
     count = 0
@@ -33,6 +39,7 @@ def fake_client(client_addr, ident, test_context):
                                "ident": ident,
                                "count": count})
     test_context['clients'] = count
+
 
 def test_high_client_load():
     test_context = {'clients': 0, 'services': 0}

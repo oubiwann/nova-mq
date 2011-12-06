@@ -1,17 +1,22 @@
-from nose.tools import *
-from novamq import services, routers, client
+import os
 import random
 import sys
-from eventlet.green import zmq
+
+from nose.tools import *
+
 import eventlet
+from eventlet.green import zmq
 from eventlet.greenpool import GreenPool
-import os
+
+from novamq import services, routers, client
+
 
 CTX = zmq.Context(1)
 
 rrobin = routers.RoundRobinRouter(CTX, "tcp://127.0.0.1:6802",
                                   "tcp://127.0.0.1:%d", 6900)
 rrobin.run()
+
 
 # a fake service that registers fro the rrtest service
 def fake_service(service_addr, index):
@@ -27,6 +32,7 @@ def fake_service(service_addr, index):
         data['index'] = index
         data['test'] = False
         rr_service.reply(client_id, style, target, data)
+
 
 # a simple client that just asks for stuff from one of the
 # above using call operations
@@ -56,4 +62,3 @@ def test_high_workload():
         clients.spawn(fake_client, "tcp://127.0.0.1:6802", "%s:%s" % (os.getpid(), i))
 
     clients.waitall()
-

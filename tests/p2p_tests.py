@@ -1,18 +1,24 @@
-import eventlet
-from nose.tools import *
+import os
 import random
 import sys
+
+from nose.tools import *
+
+import eventlet
+
 from eventlet.green import zmq
-from novamq import services, routers, client
 from eventlet.greenpool import GreenPool
 from eventlet.timeout import Timeout
-import os
+
+from novamq import services, routers, client
+
 
 CTX = zmq.Context(1)
 TOPIC = "testtopic:%d" % os.getpid()
 
 p2p = routers.PointToPointRouter(CTX, "tcp://127.0.0.1:6804", "tcp://127.0.0.1:6805")
 p2p.run()
+
 
 def fake_service(service_addr):
     p2p_service = services.P2PService(CTX, service_addr, TOPIC)
