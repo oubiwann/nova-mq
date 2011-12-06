@@ -1,7 +1,8 @@
-from eventlet.green import zmq
 import pickle
-from novamq.util import QueueSocket
 
+from eventlet.green import zmq
+
+from novamq.util import QueueSocket
 
 
 class RoundRobinClient(object):
@@ -18,7 +19,6 @@ class RoundRobinClient(object):
         data[-1] = pickle.loads(data[-1])
         return data
 
-
     def call(self, target, data):
         self.send('call', target, data)
         return self.recv()
@@ -30,12 +30,11 @@ class RoundRobinClient(object):
         self.outq.close()
 
 
-
 class P2PConnection(object):
 
     def __init__(self, ctx, addr, ident, sock_type=zmq.XREQ):
         self.queue = QueueSocket(ctx, addr, sock_type, bind=False,
-                                   ident=ident)
+                                 ident=ident)
 
     def send(self, style, target, data):
         self.queue.send([style, target, pickle.dumps(data)])
@@ -70,4 +69,3 @@ class PubSubClient(object):
 
     def close(self):
         self.outq.close()
-

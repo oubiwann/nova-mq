@@ -1,21 +1,24 @@
-from novamq import client, services
+import hashlib
+import logging
+import os
+import pickle
+import types
+import traceback
+from uuid import uuid4
+
 from nova.rpc.common import RemoteError
 from nova import context
+
+from greenlet import GreenletExit
+
 from eventlet.green import zmq
 from eventlet.greenpool import GreenPool
 from eventlet.timeout import Timeout
 from eventlet.pool import Pool
-from uuid import uuid4
 import eventlet
-import os
-import pickle
-import logging
-import types
-import hashlib
-from greenlet import GreenletExit
-import traceback
 
-CTX = zmq.Context(1)
+from novamq import client, services
+
 
 # TODO: make this configurable
 RR_CLIENT = "tcp://127.0.0.1:6802"
@@ -23,7 +26,13 @@ RR_SERVICE = "tcp://127.0.0.1:6900"
 PUBSUB_SERVICE = "tcp://127.0.0.1:6800"
 PUBSUB_CLIENT = "tcp://127.0.0.1:6801"
 
+
+CTX = zmq.Context(1)
+
+
 class RpcContext(context.RequestContext):
+    """
+    """
     def __init__(self, *args, **kwargs):
         self.replies = []
         super(RpcContext, self).__init__(*args, **kwargs)
@@ -43,7 +52,8 @@ class RpcContext(context.RequestContext):
 
 
 class ConsumerBase(object):
-
+    """
+    """
     def __init__(self, topic, proxy):
         self.topic = topic
         self.proxy = proxy
@@ -58,7 +68,7 @@ class ConsumerBase(object):
 
     def build_exception(self, data, trace):
         """
-        A list is always returned, but an exception is 
+        A list is always returned, but an exception is
         a dict so that the caller can differentiate exception
         responses from data responses.
         """
@@ -85,7 +95,10 @@ class ConsumerBase(object):
             except Exception:
                 return self.build_exception(data, traceback.format_exc())
 
+
 class FanoutConsumer(ConsumerBase):
+    """
+    """
     def __init__(self, topic, proxy):
         super(FanoutConsumer, self).__init__(topic, proxy)
         self.service = services.PubSubService(CTX, PUBSUB_SERVICE, self.topic)
@@ -109,6 +122,8 @@ class FanoutConsumer(ConsumerBase):
 
 
 class TopicConsumer(ConsumerBase):
+    """
+    """
     def __init__(self, topic, proxy):
         super(TopicConsumer, self).__init__(topic, proxy)
         self.service = services.RoundRobinService(CTX, RR_SERVICE)
@@ -134,7 +149,8 @@ class TopicConsumer(ConsumerBase):
 
 
 class Connection(object):
-
+    """
+    """
     def __init__(self):
         self.consumers = []
         self.consumer_threads = []
@@ -159,9 +175,11 @@ class Connection(object):
         for consumer in self.consumers:
             self.consumer_threads.spawn(consumer.consume)
 
+
 def genident(context):
     # might want to make this a hash of a compound id
     return uuid4().hex
+
 
 def _send(style, context, topic, msg, method=client.RoundRobinClient,
          addr=RR_CLIENT):
@@ -192,27 +210,30 @@ def _send(style, context, topic, msg, method=client.RoundRobinClient,
         print "DIE CLIENT", topic
         conn.close()
 
+
 def create_connection(new=True):
     return Connection()
+
 
 def multicall(context, topic, msg):
     print "RR MULTICALL", topic, msg
     style, target, data = _send("call", context, str(topic), msg)
     return data
 
+
 def call(context, topic, msg):
     print "RR CALL", topic, msg
     style, target, data = _send("call", context, str(topic), msg)
     return data[-1]
 
+
 def cast(context, topic, msg):
     print "RR CAST", topic, msg
     _send("cast", context, str(topic), msg)
+
 
 def fanout_cast(context, topic, msg):
     print "FANOUT CAST", topic, msg
 
     _send("cast", context, str(topic), msg, method=client.PubSubClient,
          addr=PUBSUB_CLIENT)
-
-

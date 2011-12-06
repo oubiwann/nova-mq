@@ -1,5 +1,6 @@
 from eventlet.green import zmq
 
+
 class QueueSocket(object):
     """
     A tiny wrapper around ZeroMQ to simplify the send/recv protocol
